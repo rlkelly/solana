@@ -12,7 +12,7 @@ use isatty::stdin_isatty;
 use rayon::prelude::*;
 use solana::accountant_stub::AccountantStub;
 use solana::mint::MintDemo;
-use solana::signature::{KeyPair, KeyPairUtil};
+use solana::signature::{GenKeys, KeyPair, KeyPairUtil};
 use solana::transaction::Transaction;
 use std::env;
 use std::io::{stdin, Read};
@@ -82,6 +82,17 @@ fn main() {
         exit(1);
     });
 
+    let rnd = GenKeys::new(demo.mint.keypair().public_key_bytes());
+    let tokens_per_user = 1_000;
+
+    let users: Vec<_> = (0..demo.num_accounts)
+        .into_par_iter()
+        .map(|_| {
+            let pkcs8 = rnd.new_key();
+            (pkcs8, tokens_per_user)
+        })
+        .collect();
+
     let socket = UdpSocket::bind(&send_addr).unwrap();
     let mut acc = AccountantStub::new(&addr, socket);
 
@@ -89,8 +100,9 @@ fn main() {
     let last_id = acc.get_last_id().wait().unwrap();
 
     println!("Creating keypairs...");
-    let txs = demo.users.len() / 2;
-    let keypairs: Vec<_> = demo.users
+
+    let txs = users.len() / 2;
+    let keypairs: Vec<_> = users
         .into_par_iter()
         .map(|(pkcs8, _)| KeyPair::from_pkcs8(Input::from(&pkcs8)).unwrap())
         .collect();
@@ -132,6 +144,7 @@ fn main() {
     let mut tx_count = acc.transaction_count();
     while tx_count < transactions.len() as u64 / 2 {
         tx_count = acc.transaction_count();
+        println!("{}", tx_count);
     }
     let txs = tx_count - initial_tx_count;
     println!("Transactions processed {}", txs);
