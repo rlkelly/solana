@@ -28,6 +28,7 @@ extern crate generic_array;
 extern crate libc;
 #[macro_use]
 extern crate log;
+extern crate rand;
 extern crate rayon;
 extern crate ring;
 extern crate serde;

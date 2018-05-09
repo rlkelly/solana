@@ -438,8 +438,15 @@ mod test {
     use std::sync::{Arc, RwLock};
     use std::thread::sleep;
     use std::time::Duration;
+<<<<<<< HEAD
     use streamer::{blob_receiver, receiver, responder, retransmitter, window};
     use streamer::{BlobReceiver, PacketReceiver};
+=======
+    use streamer::{
+        blob_receiver, receiver, responder, retransmitter, window, BlobReceiver, PacketReceiver,
+    };
+    use subscribers::{Node, Subscribers};
+>>>>>>> automated wallet generation
 
     fn get_msgs(r: PacketReceiver, num: &mut usize) {
         for _t in 0..5 {
