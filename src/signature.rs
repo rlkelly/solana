@@ -2,7 +2,7 @@
 
 use generic_array::typenum::{U32, U64};
 use generic_array::GenericArray;
-use rand::{ChaChaRng, SeedableRng};
+use rand::{Rng, SeedableRng, ChaChaRng};
 use ring::error::Unspecified;
 use ring::rand::SecureRandom;
 use ring::signature::Ed25519KeyPair;
@@ -54,7 +54,6 @@ pub struct GenKeys {
 impl GenKeys {
     pub fn new(seed_values: &[u8]) -> GenKeys {
         let seed: &[u8] = &seed_values[..];
-        eprintln!("seed:: {:?}", seed);
         let rng: ChaChaRng = SeedableRng::from_seed(unsafe { mem::transmute(seed) });
         GenKeys {
             generator: RwLock::new(rng),

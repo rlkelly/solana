@@ -11,8 +11,12 @@ use getopts::Options;
 use isatty::stdin_isatty;
 use rayon::prelude::*;
 use solana::mint::MintDemo;
+<<<<<<< HEAD
 use solana::signature::{KeyPair, KeyPairUtil};
 use solana::thin_client::ThinClient;
+=======
+use solana::signature::{KeyPair, KeyPairUtil, GenKeys};
+>>>>>>> updated demo
 use solana::transaction::Transaction;
 use std::env;
 use std::io::{stdin, Read};
@@ -35,7 +39,11 @@ fn print_usage(program: &str, opts: Options) {
 fn main() {
     let mut threads = 4usize;
     let mut addr: String = "127.0.0.1:8000".to_string();
+<<<<<<< HEAD
     let mut client_addr: String = "127.0.0.1:8010".to_string();
+=======
+    let mut client_addr: String = "127.0.0.1:8001".to_string();
+>>>>>>> updated demo
 
     let mut opts = Options::new();
     opts.optopt("s", "", "server address", "host:port");
@@ -87,16 +95,33 @@ fn main() {
     println!("Binding to {}", client_addr);
     let socket = UdpSocket::bind(&client_addr).unwrap();
     socket.set_read_timeout(Some(Duration::new(5, 0))).unwrap();
+<<<<<<< HEAD
     let mut acc = ThinClient::new(addr.parse().unwrap(), socket);
+=======
+    let mut acc = AccountantStub::new(addr.parse().unwrap(), socket);
+>>>>>>> updated demo
 
     println!("Get last ID...");
     let last_id = acc.get_last_id().wait().unwrap();
     println!("Got last ID {:?}", last_id);
 
     println!("Creating keypairs...");
-    let txs = demo.users.len() / 2;
-    let keypairs: Vec<_> = demo.users
+
+    let rnd = GenKeys::new(demo.mint.keypair().public_key_bytes());
+    let tokens_per_user = 1_000;
+
+    let users: Vec<_> = (0..demo.num_accounts)
         .into_par_iter()
+        .map(|_| {
+            let pkcs8 = rnd.new_key();
+            (pkcs8, tokens_per_user)
+        })
+        .collect();
+
+    let txs = users.len() / 2;
+
+    let keypairs: Vec<_> = users
+        .into_iter()
         .map(|(pkcs8, _)| KeyPair::from_pkcs8(Input::from(&pkcs8)).unwrap())
         .collect();
     let keypair_pairs: Vec<_> = keypairs.chunks(2).collect();
@@ -129,7 +154,11 @@ fn main() {
         let mut client_addr: SocketAddr = client_addr.parse().unwrap();
         client_addr.set_port(0);
         let socket = UdpSocket::bind(client_addr).unwrap();
+<<<<<<< HEAD
         let acc = ThinClient::new(addr.parse().unwrap(), socket);
+=======
+        let acc = AccountantStub::new(addr.parse().unwrap(), socket);
+>>>>>>> updated demo
         for tr in trs {
             acc.transfer_signed(tr.clone()).unwrap();
         }
@@ -137,7 +166,11 @@ fn main() {
 
     println!("Waiting for transactions to complete...",);
     let mut tx_count;
+<<<<<<< HEAD
     for _ in 0..10 {
+=======
+    for _ in 0..5 {
+>>>>>>> updated demo
         tx_count = acc.transaction_count();
         duration = now.elapsed();
         let txs = tx_count - initial_tx_count;
